@@ -1,0 +1,32 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    ext.kotlinVersion = '1.0.+'
+
+    repositories {
+        jcenter()
+        maven { url 'https://repos.zeroturnaround.com/nexus/content/repositories/zt-public-releases' }
+
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.0.0-beta4'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+        classpath 'com.jakewharton.hugo:hugo-plugin:1.2.1'
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+        maven { url 'http://oss.jfrog.org/artifactory/oss-snapshot-local' }
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+        maven { url 'https://github.com/uPhyca/stetho-realm/raw/master/maven-repo' }
+        maven { url "https://jitpack.io" }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
