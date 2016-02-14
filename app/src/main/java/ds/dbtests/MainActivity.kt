@@ -221,6 +221,7 @@ class MainActivity : AppCompatActivity() {
 
 		// snappy clean
 		snappy.del("user")
+		snappy.del("order")
 
 		// orma clean
 		orma.deleteFromOrderOrma().execute();
@@ -383,13 +384,8 @@ class MainActivity : AppCompatActivity() {
 				//u.orders.add(o)
 				o.save()
 			}
-
-
 		}
-
-
 	}
-
 
 	private fun dbflowReadTest(lazy: Boolean) {
 
@@ -467,6 +463,8 @@ class MainActivity : AppCompatActivity() {
 			u.phone = "555-123-4567"
 			u.sex = "male"
 
+			snappy.put("user${u.id}", u)
+
 			for (k in 0..ORDERS) {
 				val o = OrderSnappy()
 				o.id = (i * (ORDERS + 1) + k + 1).toLong()
@@ -476,26 +474,31 @@ class MainActivity : AppCompatActivity() {
 				o.created = Date()
 				o.expiration = Date(System.currentTimeMillis() + 1000 * 60)
 				o.description = DESCRIPTION
-				o.user = u
-				u.addOrder(o)
+				//o.user = u
+				//u.addOrder(o)
+
+				val key = "order${u.id}:${o.id}"
+				snappy.put(key, o)
+				//println("write order [$key]")
 			}
 
-			snappy.put("user:${u.id.toString()}", u)
 
 		}
 	}
 
 	private fun snappyReadTest() {
-		val keys = snappy.findKeysIterator("user")
-		keys.use {
-			for (k in keys.next(ITERATIONS)) {
-				val u = snappy.getObject(k, UserSnappy::class.java)
-				for ((i, o) in u.orders.withIndex()) {
-				}
-
+		val userKeys = snappy.findKeys("user")
+		//println("snappy users size ${userKeys.size}")
+		for (key in userKeys) {
+			val user = snappy.getObject(key, UserSnappy::class.java)
+			val orderKey = "order${user.id}:"
+			val ordersKeys = snappy.findKeys(orderKey)
+			//println("read order [$orderKey]")
+			//println("snappy orders size ${ordersKeys.size}")
+			for (key in ordersKeys) {
+				val order = snappy.getObject(key, OrderSnappy::class.java)
 			}
 		}
-
 
 	}
 
