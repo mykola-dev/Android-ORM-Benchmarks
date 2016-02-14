@@ -160,7 +160,6 @@ class MainActivity : AppCompatActivity() {
 			realm.close()
 			it.onCompleted()
 		}
-				.doOnSubscribe { System.gc() }
 				.subscribeOn(Schedulers.io())
 				.observeOn(AndroidSchedulers.mainThread())
 				.subscribe ({
@@ -173,7 +172,6 @@ class MainActivity : AppCompatActivity() {
 					            if (it.title != null)
 						            ChartData.results.put(it.title, it)
 
-					            System.gc()
 				            }, {
 					            it.printStackTrace()
 					            message("Failure")
