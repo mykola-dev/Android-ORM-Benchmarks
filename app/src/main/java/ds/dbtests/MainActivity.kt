@@ -170,7 +170,7 @@ class MainActivity : AppCompatActivity() {
 						            message("${it.readMessage}: ${it.readValue}ms")
 
 					            if (it.title != null)
-						            ChartData.results.put(it.title, it)
+						            ChartData.results.add(it)
 
 				            }, {
 					            it.printStackTrace()
