@@ -79,7 +79,7 @@ class ChartActivity : AppCompatActivity(), OnChartValueSelectedListener {
 		dataSets.add(writeSet)
 
 		val data = BarData(xVals, dataSets)
-		data.setValueTextSize(dp(10))
+		data.setValueTextSize(10f)
 		chart.data = data
 		chart.animateY(1000)
 		chart.invalidate()
