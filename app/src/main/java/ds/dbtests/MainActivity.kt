@@ -404,6 +404,9 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	private fun ormaWriteTest() {
+		val userInserter = orma.prepareInsertIntoUserOrma()
+		val orderInserter = orma.prepareInsertIntoOrderOrma();
+
 		for (i in 0..ITERATIONS) {
 			val u = UserOrma()
 			u.name = names[i % names.size]
@@ -414,7 +417,7 @@ class MainActivity : AppCompatActivity() {
 			u.password = "password123"
 			u.phone = "555-123-4567"
 			u.sex = "male"
-			val userId = orma.insertIntoUserOrma(u)
+			val userId = userInserter.execute(u)
 
 			for (k in 0..ORDERS) {
 				val o = OrderOrma()
@@ -425,7 +428,7 @@ class MainActivity : AppCompatActivity() {
 				o.expiration = Date(System.currentTimeMillis() + 1000 * 60)
 				o.description = DESCRIPTION
 				o.user = SingleAssociation.just(userId, u)    // throws exception if user == null :(
-				orma.insertIntoOrderOrma(o)
+				orderInserter.execute(o)
 				//Log.v("order id=", "" + o.id);
 			}
 
