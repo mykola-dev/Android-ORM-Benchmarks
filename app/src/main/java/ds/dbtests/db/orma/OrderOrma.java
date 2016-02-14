@@ -21,33 +21,6 @@ public class OrderOrma {
 
     @Column(indexed = true) public SingleAssociation<UserOrma> user;
 
-  /*  public SingleAssociation<UserOrma> getUser() {
-        if (user == null)
-            return SingleAssociation.id(0);
-
-        return user;
-    }*/
-
-   /* public void setUser(SingleAssociation<UserOrma> user) {
-        this.user = user;
-    }*/
-
-    //@ForeignKey(saveForeignKeyModel = false)
-    //public ForeignKeyContainer<UserDBFlow> user;
-
-   /* @Setter
-    public void setUser(UserOrma u) {
-        user = u;
-        user_id = u.id;
-    }*/
-
-   /* public UserOrma getUser() {
-        return user.value();
-    }
-
-    public void setUser(UserOrma u) {
-        user = SingleAssociation.just(u);
-    }*/
 
 }
 

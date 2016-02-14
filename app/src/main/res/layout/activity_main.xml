@@ -15,6 +15,8 @@
         android:id="@+id/text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="10sp"
+        android:textSize="14sp"
+        xmlns:tools="http://schemas.android.com/tools"
+        tools:text="Text"
         />
 </ScrollView>

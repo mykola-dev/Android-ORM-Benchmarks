@@ -1,5 +1,6 @@
 package ds.dbtests
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
@@ -35,7 +36,6 @@ import java.util.*
 
 class MainActivity : AppCompatActivity() {
 	companion object {
-		const val LAZY = false
 		const val ITERATIONS = 99
 		const val ORDERS = 99
 		const val DESCRIPTION = """Once upon a midnight dreary, while I pondered, weak and weary,
@@ -58,6 +58,7 @@ class MainActivity : AppCompatActivity() {
 
 	private val textView by bindView<TextView>(R.id.text)
 
+
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_main)
@@ -68,6 +69,7 @@ class MainActivity : AppCompatActivity() {
 		initDBFlow()
 		initSnappy()
 		initOrma()
+		initStorio()    // todo
 	}
 
 
@@ -99,6 +101,13 @@ class MainActivity : AppCompatActivity() {
 		ormLite = OrmLiteDB.instance
 	}
 
+	private fun initStorio() {
+		//val storIOSQLite = DefaultStorIOSQLite.builder()
+		//.sqliteOpenHelper(yourSqliteOpenHelper)
+		//.addTypeMapping(SomeType.class, typeMapping) // required for object mapping
+		//.build();
+	}
+
 
 	private fun initGreenDao() {
 		val helper = DaoMaster.DevOpenHelper(this, "greendao_db", null)
@@ -109,55 +118,62 @@ class MainActivity : AppCompatActivity() {
 
 
 	private fun runTests() {
-		//System.gc()
 		message("Run test with $ITERATIONS users, $ORDERS orders in each user.\nPlease wait until 'done' message")
-		observable<Pair<Long, String>> {
+		observable<TestResult> {
 			realm = Realm.getInstance(this)
-			it.onNext(profile { cleanAll() } to "Clean DB")
 
-			//it.onNext(profile { ormaWriteTest() } to "Orma write test")
-			it.onNext(profile {
+
+			it.onNext(TestResult(null, "Clean DB", profile { cleanAll() }))
+
+			it.onNext(TestResult("Orma",
+			                     "Orma write test in transaction", profile {
 				orma.transactionSync(object : TransactionTask() {
 					override fun execute() = ormaWriteTest()
 				})
-			} to "Orma write test in transaction")
-			it.onNext(profile { ormaReadTest(false) } to "Orma read test")
+			},
+			                     "Orma read test", profile { ormaReadTest(false) }))
 
-			it.onNext(profile { TransactionManager.transact(DBFlowDatabase.NAME, { dbflowWriteTest() }) } to "DBFlow write test in transaction")
-			//it.onNext(profile { dbflowReadTest(true) } to "DBFlow lazy read test")
-			it.onNext(profile { dbflowReadTest(false) } to "DBFlow full read test")
+			it.onNext(TestResult("DBFlow",
+			                     "DBFlow write test in transaction", profile { TransactionManager.transact(DBFlowDatabase.NAME, { dbflowWriteTest() }) },
+			                     "DBFlow full read test", profile { dbflowReadTest(false) }))
 
-			it.onNext(profile { greenDao.runInTx { greenDaoWriteTest() } } to "GreenDao write test in transaction")
-			//it.onNext(profile { greenDaoReadTest(true) } to "GreenDao lazy read test")
-			it.onNext(profile { greenDaoReadTest(false) } to "GreenDao full read test")
+			it.onNext(TestResult("GreenDAO",
+			                     "GreenDao write test in transaction", profile { greenDao.runInTx { greenDaoWriteTest() } },
+			                     "GreenDao full read test", profile { greenDaoReadTest(false) }))
 
-			it.onNext(profile { realm.executeTransaction { realmWriteTest() } } to "Realm write test in transaction")
-			it.onNext(profile { realmReadTest() } to "Realm read test")
+			it.onNext(TestResult("Realm",
+			                     "Realm write test in transaction", profile { realm.executeTransaction { realmWriteTest() } },
+			                     "Realm read test", profile { realmReadTest() }))
 
-			it.onNext(profile { snappyWriteTest() } to "Snappy write test")
-			it.onNext(profile { snappyReadTest() } to "Snappy read test")
+			it.onNext(TestResult("SnappyDB",
+			                     "Snappy write test", profile { snappyWriteTest() },
+			                     "Snappy read test", profile { snappyReadTest() }))
 
-			it.onNext(profile { ormLite.usersDao.callBatchTasks { ormLiteWriteTest() } } to "OrmLite write test in transaction")
-			it.onNext(profile { ormLiteReadTest() } to "OrmLite read test")
+			it.onNext(TestResult("ORMLite",
+			                     "OrmLite write test in transaction", profile { ormLite.usersDao.callBatchTasks { ormLiteWriteTest() } },
+			                     "OrmLite read test", profile { ormLiteReadTest() }))
 
-			it.onNext(profile { memoryWriteTest() } to "Memory write test")
-			it.onNext(profile { memoryReadTest() } to "Memory read test")
-			/*
-
-			it.onNext(profile { greenDao.runInTx { greenDaoWriteTest2() } } to "GreenDao flat write test in transaction")
-			it.onNext(profile { greenDaoReadTest2() } to "GreenDao flat read test")
-			it.onNext(profile { cleanAll() } to "Clean DB")
-
-*/
-
+			it.onNext(TestResult("RAM",
+			                     "Memory write test", profile { memoryWriteTest() },
+			                     "Memory read test", profile { memoryReadTest() }))
 
 			realm.close()
 			it.onCompleted()
 		}
+				.doOnSubscribe { System.gc() }
 				.subscribeOn(Schedulers.io())
 				.observeOn(AndroidSchedulers.mainThread())
 				.subscribe ({
-					            message("${it.second}: ${it.first}ms")
+					            if (it.writeMessage != null)
+						            message("${it.writeMessage}: ${it.writeValue}ms")
+
+					            if (it.readMessage != null)
+						            message("${it.readMessage}: ${it.readValue}ms")
+
+					            if (it.title != null)
+						            ChartData.results.put(it.title, it)
+
+					            System.gc()
 				            }, {
 					            it.printStackTrace()
 					            message("Failure")
@@ -206,8 +222,7 @@ class MainActivity : AppCompatActivity() {
 		Delete.tables(UserDBFlow::class.java, OrderDBFlow::class.java)
 
 		// snappy clean
-		snappy.destroy()
-		snappy = DBFactory.open(this)
+		snappy.del("user")
 
 		// orma clean
 		orma.deleteFromOrderOrma().execute();
@@ -297,14 +312,10 @@ class MainActivity : AppCompatActivity() {
 	private fun ormLiteReadTest() {
 		ormLite.usersDao.clearObjectCache()
 		val users = ormLite.usersDao.queryForAll()
-		if (!LAZY)
-			for (u in users) {
-				for ((i, o) in u.orders.withIndex()) {
-					if (i == 0)
-					//Log.v("#", "ormlite fingerprint=${o.toString()}")
-						o.title
-				}
+		for (u in users) {
+			for ((i, o) in u.orders.withIndex()) {
 			}
+		}
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -339,12 +350,11 @@ class MainActivity : AppCompatActivity() {
 	private fun realmReadTest() {
 
 		val users = realm.allObjects(UserRealm::class.java)
-		if (!LAZY)
-			for ((i, u) in users.withIndex()) {
-				for (o in u.orders) {
-					o.title
-				}
+		for ((i, u) in users.withIndex()) {
+			for (o in u.orders) {
+				o.title
 			}
+		}
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -391,7 +401,7 @@ class MainActivity : AppCompatActivity() {
 				.queryList()
 
 		if (!lazy) {
-			println("not lazy!")
+			//println("not lazy!")
 			for ((i, u) in users.withIndex()) {
 				for (o in u.orders) {
 				}
@@ -440,7 +450,7 @@ class MainActivity : AppCompatActivity() {
 			println("orma full read")
 			for ((i, u) in users.withIndex()) {
 				val orders = u.getOrders(orma).toList()
-				Log.v("orders size " + i, "" + orders.size)
+				//Log.v("orders size " + i, "" + orders.size)
 			}
 		}
 	}
@@ -482,9 +492,8 @@ class MainActivity : AppCompatActivity() {
 		keys.use {
 			for (k in keys.next(ITERATIONS)) {
 				val u = snappy.getObject(k, UserSnappy::class.java)
-				if (!LAZY)
-					for ((i, o) in u.orders.withIndex()) {
-					}
+				for ((i, o) in u.orders.withIndex()) {
+				}
 
 			}
 		}
@@ -527,9 +536,8 @@ class MainActivity : AppCompatActivity() {
 	private fun memoryReadTest() {
 
 		for (u in memory) {
-			if (!LAZY)
-				for ((i, o) in u.orders.withIndex()) {
-				}
+			for ((i, o) in u.orders.withIndex()) {
+			}
 		}
 	}
 
@@ -543,6 +551,7 @@ class MainActivity : AppCompatActivity() {
 	override fun onOptionsItemSelected(item: MenuItem): Boolean {
 		when (item.itemId) {
 			R.id.run -> runTests()
+			R.id.chart -> startActivity(Intent(this, ChartActivity::class.java))
 		}
 		return super.onOptionsItemSelected(item)
 	}

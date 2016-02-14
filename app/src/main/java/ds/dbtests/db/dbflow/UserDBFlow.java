@@ -1,7 +1,5 @@
 package ds.dbtests.db.dbflow;
 
-import android.util.Log;
-
 import com.raizlabs.android.dbflow.annotation.*;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
 import com.raizlabs.android.dbflow.sql.language.Where;
@@ -31,7 +29,7 @@ public class UserDBFlow extends BaseModel {
             Where<OrderDBFlow> w = SQLite.select()
                                          .from(OrderDBFlow.class)
                                          .where(OrderDBFlow_Table.user_id.eq(id));
-            Log.v("query=", w.getQuery());
+            //Log.v("query=", w.getQuery());
             orders = w.queryList();
 
         }

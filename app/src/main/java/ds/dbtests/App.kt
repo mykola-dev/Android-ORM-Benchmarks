@@ -2,6 +2,7 @@ package ds.dbtests
 
 import android.app.Application
 import com.facebook.stetho.Stetho
+import com.raizlabs.android.dbflow.config.FlowLog
 import com.raizlabs.android.dbflow.config.FlowManager
 
 class App : Application() {
@@ -24,7 +25,7 @@ class App : Application() {
 
 		// init dbflow
 		FlowManager.init(this)
-		//FlowLog.setMinimumLoggingLevel(FlowLog.Level.D);
+		FlowLog.setMinimumLoggingLevel(FlowLog.Level.E);
 	}
 
 	companion object {

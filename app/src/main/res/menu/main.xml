@@ -6,4 +6,9 @@
         android:title="Run"
         app:showAsAction="always"
         />
+
+    <item android:id="@+id/chart"
+        android:title="Show Chart"
+        app:showAsAction="always"
+        />
 </menu>
