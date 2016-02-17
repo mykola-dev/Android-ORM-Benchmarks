@@ -64,6 +64,9 @@ dependencies {
     compile "com.github.Raizlabs.DBFlow:dbflow-core:${dbflow_version}"
     compile "com.github.Raizlabs.DBFlow:dbflow:${dbflow_version}"
     compile 'com.snappydb:snappydb-lib:0.5.2'
+    compile 'io.requery:requery:1.0-SNAPSHOT'
+    compile 'io.requery:requery-android:1.0-SNAPSHOT' // for android
+    kapt 'io.requery:requery-processor:1.0-SNAPSHOT'   // prefer an APT plugin
 
     compile 'com.esotericsoftware.kryo:kryo:2.24.0'
     compile 'com.jakewharton:kotterknife:0.1.0-SNAPSHOT'

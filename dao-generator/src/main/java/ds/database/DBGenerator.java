@@ -47,7 +47,7 @@ public class DBGenerator {
         order.addDateProperty("created").notNull();
         order.addDateProperty("expiration").notNull();
         order.addStringProperty("description").notNull();
-        final Property userId = order.addLongProperty("userId").notNull().getProperty();
+        final Property userId = order.addLongProperty("userId").notNull().index().getProperty();
         order.addToOne(user, userId, "user");
         user.addToMany(order, userId);
 

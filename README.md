@@ -1,10 +1,11 @@
 ### ORM Benchmarks
 - GreenDAO
-- ORMLite
+- Orma
 - DBFlow
 - Realm
-- Orma
+- ORMLite
+- Requery
 - SnappyDB
 
-![](http://i.imgur.com/rCQvjU7.png)
+![](pics/screenshot.png)
 

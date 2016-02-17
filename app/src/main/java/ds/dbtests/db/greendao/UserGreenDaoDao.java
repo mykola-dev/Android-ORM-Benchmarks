@@ -8,7 +8,9 @@ import de.greenrobot.dao.AbstractDao;
 import de.greenrobot.dao.Property;
 import de.greenrobot.dao.internal.DaoConfig;
 
-import java.util.List;
+import ds.dbtests.db.Order;
+import java.io.*;
+import java.util.*;
 
 import ds.dbtests.db.greendao.UserGreenDao;
 
@@ -114,7 +116,7 @@ public class UserGreenDaoDao extends AbstractDao<UserGreenDao, Long> {
             stmt.bindString(9, phone);
         }
  
-        List<OrderGreenDao> rawOrders = entity.getRawOrders();
+        java.util.List<OrderGreenDao> rawOrders = entity.getRawOrders();
         if (rawOrders != null) {
             stmt.bindBlob(10, rawOrdersConverter.convertToDatabaseValue(rawOrders));
         }

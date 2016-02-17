@@ -13,7 +13,7 @@ class OrderOrmLite : Order, BaseDaoEnabled<OrderOrmLite, Int>() {
 	@DatabaseField(generatedId = true) override var id: Long? = null
 	@DatabaseField override var price: Double = 0.0
 	@DatabaseField override var title: String? = null
-	@DatabaseField(foreign = true, foreignAutoRefresh = false) private lateinit var _user: UserOrmLite
+	@DatabaseField(foreign = true, foreignAutoRefresh = false,index = true) private lateinit var _user: UserOrmLite
 	@DatabaseField override var description: String? = null
 	@DatabaseField override var expiration: Date? = null
 	@DatabaseField override var created: Date? = null

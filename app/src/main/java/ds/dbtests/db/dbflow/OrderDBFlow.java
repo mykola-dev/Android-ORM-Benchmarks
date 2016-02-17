@@ -24,24 +24,13 @@ public class OrderDBFlow extends BaseModel {
     //private UserDBFlow user;
 
     @ForeignKey(saveForeignKeyModel = false)
+    @Index
     public ForeignKeyContainer<UserDBFlow> user;
 
     public void setUser(UserDBFlow u) {
         user = FlowManager.getContainerAdapter(UserDBFlow.class).toForeignKeyContainer(u);
-        //user = u;
-        //user_id = u.id;
     }
 
-    /*public UserDBFlow getUser() {
-        if (user == null) {
-            if (user_id != 0)
-                user = new Select().from(UserDBFlow.class)
-                                   .where(UserDBFlow_Table.id.eq(user_id))
-                                   .querySingle();
-        }
-
-        return user;
-    }*/
 
 }
 

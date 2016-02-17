@@ -28,7 +28,14 @@ import ds.dbtests.db.ormlite.OrmLiteDB
 import ds.dbtests.db.ormlite.UserOrmLite
 import ds.dbtests.db.realm.OrderRealm
 import ds.dbtests.db.realm.UserRealm
+import ds.dbtests.db.requery.Models
+import ds.dbtests.db.requery.OrderRequeryEntity
+import ds.dbtests.db.requery.UserRequeryEntity
 import io.realm.Realm
+import io.requery.Persistable
+import io.requery.android.sqlite.DatabaseSource
+import io.requery.sql.ConfigurationBuilder
+import io.requery.sql.EntityDataStore
 import rx.android.schedulers.AndroidSchedulers
 import rx.lang.kotlin.observable
 import rx.schedulers.Schedulers
@@ -54,6 +61,7 @@ class MainActivity : AppCompatActivity() {
 	private lateinit var realm: Realm
 	private lateinit var snappy: DB
 	private lateinit var orma: OrmaDatabase
+	private lateinit var requery: EntityDataStore<Persistable>
 	private var memory: MutableList<User> = arrayListOf()
 
 	private val textView by bindView<TextView>(R.id.text)
@@ -70,6 +78,21 @@ class MainActivity : AppCompatActivity() {
 		initSnappy()
 		initOrma()
 		initStorio()    // todo
+		initRequery()
+	}
+
+	private fun initRequery() {
+		// override onUpgrade to handle migrating to a new version
+		val source = DatabaseSource(this, Models.DEFAULT, 1)
+		val configuration = ConfigurationBuilder(source, Models.DEFAULT)
+				//.useDefaultLogging()
+				//.setEntityCache(EntityCacheBuilder(Models.DEFAULT)
+				//.useReferenceCache(true)
+				//.useSerializableCache(true)
+				//.useCacheManager(cacheManager)
+				//		                .build())
+				.build();
+		requery = EntityDataStore(configuration)//RxSupport.toReactiveStore(EntityDataStore<Persistable>(source.configuration));
 	}
 
 
@@ -102,10 +125,6 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	private fun initStorio() {
-		//val storIOSQLite = DefaultStorIOSQLite.builder()
-		//.sqliteOpenHelper(yourSqliteOpenHelper)
-		//.addTypeMapping(SomeType.class, typeMapping) // required for object mapping
-		//.build();
 	}
 
 
@@ -124,6 +143,10 @@ class MainActivity : AppCompatActivity() {
 
 
 			it.onNext(TestResult(null, "Clean DB", profile { cleanAll() }))
+
+			it.onNext(TestResult("ReQuery",
+			                     "ReQuery write test in transaction", profile { requery.runInTransaction { requeryWriteTest() } },
+			                     "ReQuery full read test", profile { requeryReadTest(false) }))
 
 			it.onNext(TestResult("Orma",
 			                     "Orma write test in transaction", profile {
@@ -226,6 +249,10 @@ class MainActivity : AppCompatActivity() {
 		// orma clean
 		orma.deleteFromOrderOrma().execute();
 		orma.deleteFromUserOrma().execute();
+
+		// requery clean
+		requery.delete(UserRequeryEntity::class.java).get().value()
+		requery.delete(OrderRequeryEntity::class.java).get().value()
 
 		// clean memory
 		memory.clear()
@@ -431,11 +458,7 @@ class MainActivity : AppCompatActivity() {
 				orderInserter.execute(o)
 				//Log.v("order id=", "" + o.id);
 			}
-
-
 		}
-
-
 	}
 
 
@@ -451,6 +474,56 @@ class MainActivity : AppCompatActivity() {
 			}
 		}
 	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	private fun requeryWriteTest(): Unit {
+		println("requery write")
+		for (i in 0..ITERATIONS) {
+			var u = UserRequeryEntity()
+			u.name = names[i % names.size]
+			u.age = ages[i % ages.size]
+			u.height = 1.85
+			u.description = DESCRIPTION
+			u.login = "login"
+			u.password = "password123"
+			u.phone = "555-123-4567"
+			u.sex = "male"
+			//u.orders = arrayListOf()
+			u = requery.insert(u)
+
+			for (k in 0..ORDERS) {
+				val o = OrderRequeryEntity()
+				o.title = "${u.name}'s item"
+				o.price = 99.95
+				o.count = k % 2 + 1
+				o.created = Date()
+				o.expiration = Date(System.currentTimeMillis() + 1000 * 60)
+				o.description = DESCRIPTION
+				o.user = u
+				requery.insert(o)
+				//u.orders.add(o)
+				//Log.v("order id=", "" + o.id);
+			}
+
+		}
+	}
+
+	private fun requeryReadTest(lazy: Boolean): Unit {
+		val users = requery.select(UserRequeryEntity::class.java).get().toList()
+		println("requery users=${users.size}")
+		if (!lazy) {
+			println("requery full read")
+			for ((i, u) in users.withIndex()) {
+				val orders = u.getOrders()
+				for (order in orders) {
+					//println(order.id)
+				}
+				//Log.v("orders size " + i, "" + orders.size)
+			}
+		}
+	}
+
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	private fun snappyWriteTest() {
