@@ -1,3 +1,4 @@
+/*
 package ds.dbtests.db.storio;
 
 import android.content.Context;
@@ -21,4 +22,4 @@ public class StorioDbOpenHelper extends SQLiteOpenHelper {
     public void onUpgrade(@NonNull SQLiteDatabase db, int oldVersion, int newVersion) {
         // no impl
     }
-}
+}*/

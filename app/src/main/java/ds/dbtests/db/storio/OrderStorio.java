@@ -1,3 +1,4 @@
+/*
 package ds.dbtests.db.storio;
 
 
@@ -22,3 +23,4 @@ public class OrderStorio {
 
 }
 
+*/

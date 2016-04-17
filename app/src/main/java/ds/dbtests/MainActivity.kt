@@ -376,9 +376,25 @@ class MainActivity : AppCompatActivity() {
 	private fun realmReadTest() {
 
 		val users = realm.allObjects(UserRealm::class.java)
+		// must read all fields explicitly due to realm lazyness
 		for ((i, u) in users.withIndex()) {
+			u.age
+			u.description
+			u.height
+			u.id
+			u.login
+			u.name
+			u.password
+			u.phone
+			u.sex
 			for (o in u.orders) {
 				o.title
+				o.count
+				o.created
+				o.description
+				o.expiration
+				o.id
+				o.price
 			}
 		}
 	}

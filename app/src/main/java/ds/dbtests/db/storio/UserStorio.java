@@ -1,3 +1,4 @@
+/*
 package ds.dbtests.db.storio;
 
 import com.pushtorefresh.storio.sqlite.annotations.StorIOSQLiteColumn;
@@ -21,3 +22,4 @@ public class UserStorio {
     public List<OrderStorio> orders;
 
 }
+*/
