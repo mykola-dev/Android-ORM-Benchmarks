@@ -368,7 +368,7 @@ class MainActivity : AppCompatActivity() {
 				o.expiration = Date(System.currentTimeMillis() + 1000 * 60)
 				o.description = DESCRIPTION
 				u.orders.add(o)
-				realm.copyToRealm(o)
+				//realm.copyToRealm(o)
 			}
 		}
 	}
