@@ -1,6 +1,6 @@
 package ds.dbtests.db.greendao
 
-import de.greenrobot.dao.converter.PropertyConverter
+import org.greenrobot.greendao.converter.PropertyConverter
 import java.util.*
 
 class OrderSerializer : PropertyConverter<List<OrderGreenDao>, ByteArray> {

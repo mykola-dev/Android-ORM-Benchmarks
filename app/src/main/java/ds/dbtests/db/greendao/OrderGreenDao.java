@@ -1,7 +1,12 @@
 package ds.dbtests.db.greendao;
 
-import ds.dbtests.db.greendao.DaoSession;
-import de.greenrobot.dao.DaoException;
+import org.greenrobot.greendao.DaoException;
+import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.Generated;
+import org.greenrobot.greendao.annotation.Id;
+import org.greenrobot.greendao.annotation.Index;
+import org.greenrobot.greendao.annotation.NotNull;
+import org.greenrobot.greendao.annotation.ToOne;
 
 import ds.dbtests.db.User;
 
@@ -12,33 +17,45 @@ import ds.dbtests.db.User;
 /**
  * Entity mapped to table "ORDER_GREEN_DAO".
  */
+@Entity(active = true)
 public class OrderGreenDao implements java.io.Serializable, ds.dbtests.db.Order {
 
+    @Id(autoincrement = true)
     private Long id;
     private String title;
     private double price;
     private int count;
-    /** Not-null value. */
+
+    @NotNull
     private java.util.Date created;
-    /** Not-null value. */
+
+    @NotNull
     private java.util.Date expiration;
-    /** Not-null value. */
+
+    @NotNull
     private String description;
+
+    @Index
     private long userId;
 
     /** Used to resolve relations */
+    @Generated(hash = 2040040024)
     private transient DaoSession daoSession;
-
     /** Used for active entity operations. */
+    @Generated(hash = 1417876764)
     private transient OrderGreenDaoDao myDao;
-
+    @ToOne(joinProperty = "userId")
     private UserGreenDao user;
-    private Long user__resolvedKey;
 
+    @Generated(hash = 251390918)
+    private transient Long user__resolvedKey;
+
+    
 
     // KEEP FIELDS - put your custom fields here
     // KEEP FIELDS END
 
+    @Generated(hash = 1805740375)
     public OrderGreenDao() {
     }
 
@@ -46,7 +63,9 @@ public class OrderGreenDao implements java.io.Serializable, ds.dbtests.db.Order 
         this.id = id;
     }
 
-    public OrderGreenDao(Long id, String title, double price, int count, java.util.Date created, java.util.Date expiration, String description, long userId) {
+    @Generated(hash = 1769523073)
+    public OrderGreenDao(Long id, String title, double price, int count, @NotNull java.util.Date created, @NotNull java.util.Date expiration,
+            @NotNull String description, long userId) {
         this.id = id;
         this.title = title;
         this.price = price;
@@ -58,6 +77,7 @@ public class OrderGreenDao implements java.io.Serializable, ds.dbtests.db.Order 
     }
 
     /** called by internal mechanisms, do not call yourself. */
+    @Generated(hash = 453244264)
     public void __setDaoSession(DaoSession daoSession) {
         this.daoSession = daoSession;
         myDao = daoSession != null ? daoSession.getOrderGreenDaoDao() : null;
@@ -95,33 +115,33 @@ public class OrderGreenDao implements java.io.Serializable, ds.dbtests.db.Order 
         this.count = count;
     }
 
-    /** Not-null value. */
+    @NotNull
     public java.util.Date getCreated() {
         return created;
     }
 
     /** Not-null value; ensure this value is available before it is saved to the database. */
-    public void setCreated(java.util.Date created) {
+    public void setCreated(@NotNull java.util.Date created) {
         this.created = created;
     }
 
-    /** Not-null value. */
+    @NotNull
     public java.util.Date getExpiration() {
         return expiration;
     }
 
     /** Not-null value; ensure this value is available before it is saved to the database. */
-    public void setExpiration(java.util.Date expiration) {
+    public void setExpiration(@NotNull java.util.Date expiration) {
         this.expiration = expiration;
     }
 
-    /** Not-null value. */
+    @NotNull
     public String getDescription() {
         return description;
     }
 
     /** Not-null value; ensure this value is available before it is saved to the database. */
-    public void setDescription(String description) {
+    public void setDescription(@NotNull String description) {
         this.description = description;
     }
 
@@ -134,9 +154,11 @@ public class OrderGreenDao implements java.io.Serializable, ds.dbtests.db.Order 
     }
 
     /** To-one relationship, resolved on first access. */
+    @Generated(hash = 462796126)
     public UserGreenDao getUser() {
         long __key = this.userId;
         if (user__resolvedKey == null || !user__resolvedKey.equals(__key)) {
+            final DaoSession daoSession = this.daoSession;
             if (daoSession == null) {
                 throw new DaoException("Entity is detached from DAO context");
             }
@@ -144,13 +166,15 @@ public class OrderGreenDao implements java.io.Serializable, ds.dbtests.db.Order 
             UserGreenDao userNew = targetDao.load(__key);
             synchronized (this) {
                 user = userNew;
-            	user__resolvedKey = __key;
+                user__resolvedKey = __key;
             }
         }
         return user;
     }
 
-    public void setUser(UserGreenDao user) {
+    /** called by internal mechanisms, do not call yourself. */
+    @Generated(hash = 355604469)
+    public void setUser(@NotNull UserGreenDao user) {
         if (user == null) {
             throw new DaoException("To-one property 'userId' has not-null constraint; cannot set to-one to null");
         }
@@ -161,27 +185,39 @@ public class OrderGreenDao implements java.io.Serializable, ds.dbtests.db.Order 
         }
     }
 
-    /** Convenient call for {@link AbstractDao#delete(Object)}. Entity must attached to an entity context. */
+    /**
+     * Convenient call for {@link org.greenrobot.greendao.AbstractDao#delete(Object)}.
+     * Entity must attached to an entity context.
+     */
+    @Generated(hash = 128553479)
     public void delete() {
         if (myDao == null) {
             throw new DaoException("Entity is detached from DAO context");
-        }    
+        }
         myDao.delete(this);
     }
 
-    /** Convenient call for {@link AbstractDao#update(Object)}. Entity must attached to an entity context. */
+    /**
+     * Convenient call for {@link org.greenrobot.greendao.AbstractDao#update(Object)}.
+     * Entity must attached to an entity context.
+     */
+    @Generated(hash = 713229351)
     public void update() {
         if (myDao == null) {
             throw new DaoException("Entity is detached from DAO context");
-        }    
+        }
         myDao.update(this);
     }
 
-    /** Convenient call for {@link AbstractDao#refresh(Object)}. Entity must attached to an entity context. */
+    /**
+     * Convenient call for {@link org.greenrobot.greendao.AbstractDao#refresh(Object)}.
+     * Entity must attached to an entity context.
+     */
+    @Generated(hash = 1942392019)
     public void refresh() {
         if (myDao == null) {
             throw new DaoException("Entity is detached from DAO context");
-        }    
+        }
         myDao.refresh(this);
     }
 

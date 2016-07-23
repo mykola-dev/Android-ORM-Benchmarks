@@ -1,3 +1,4 @@
+apply plugin: 'org.greenrobot.greendao'
 apply plugin: 'com.android.application'
 apply plugin: 'com.jakewharton.hugo'
 //apply plugin: 'com.neenbedankt.android-apt'
@@ -5,7 +6,7 @@ apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    buildToolsVersion "23.0.3"
 
     defaultConfig {
         applicationId "ds.dbtests"
@@ -44,6 +45,11 @@ kapt {
     generateStubs = true
 }
 
+greendao {
+    schemaVersion 9
+
+}
+
 dependencies {
     def dbflow_version = "3.0.0-beta5"
     def realm_version = "0.87.4"
@@ -53,11 +59,8 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.1.1'
 
     // orms
-    //compile 'com.pushtorefresh.storio:sqlite:1.8.0'
-    //compile 'com.pushtorefresh.storio:sqlite-annotations-processor:1.8.0'
-    //kapt 'com.pushtorefresh.storio:sqlite-annotations-processor:1.8.0'
     compile 'com.j256.ormlite:ormlite-android:4.48'
-    compile 'de.greenrobot:greendao:2.1.0'
+    compile 'org.greenrobot:greendao:3.0.1'
     compile "io.realm:realm-android:${realm_version}"
     kapt "io.realm:realm-android:${realm_version}"
     compile "com.github.gfx.android.orma:orma:${orma_version}"
