@@ -12,7 +12,7 @@ import com.github.gfx.android.orma.AccessThreadConstraint
 import com.github.gfx.android.orma.SingleAssociation
 import com.github.gfx.android.orma.TransactionTask
 import com.j256.ormlite.table.TableUtils
-import com.raizlabs.android.dbflow.runtime.TransactionManager
+import com.raizlabs.android.dbflow.config.FlowManager
 import com.raizlabs.android.dbflow.sql.language.Delete
 import com.raizlabs.android.dbflow.sql.language.Select
 import com.snappydb.DB
@@ -32,6 +32,7 @@ import ds.dbtests.db.requery.Models
 import ds.dbtests.db.requery.OrderRequeryEntity
 import ds.dbtests.db.requery.UserRequeryEntity
 import io.realm.Realm
+import io.realm.RealmConfiguration
 import io.requery.Persistable
 import io.requery.android.sqlite.DatabaseSource
 import io.requery.sql.ConfigurationBuilder
@@ -63,6 +64,7 @@ class MainActivity : AppCompatActivity() {
 	private lateinit var orma: OrmaDatabase
 	private lateinit var requery: EntityDataStore<Persistable>
 	private var memory: MutableList<User> = arrayListOf()
+	private var realmConfig: RealmConfiguration? = null
 
 	private val textView by bindView<TextView>(R.id.text)
 
@@ -85,27 +87,25 @@ class MainActivity : AppCompatActivity() {
 		// override onUpgrade to handle migrating to a new version
 		val source = DatabaseSource(this, Models.DEFAULT, 1)
 		val configuration = ConfigurationBuilder(source, Models.DEFAULT)
-				//.useDefaultLogging()
-				//.setEntityCache(EntityCacheBuilder(Models.DEFAULT)
-				//.useReferenceCache(true)
-				//.useSerializableCache(true)
-				//.useCacheManager(cacheManager)
-				//		                .build())
-				.build();
+			//.useDefaultLogging()
+			//.setEntityCache(EntityCacheBuilder(Models.DEFAULT)
+			//.useReferenceCache(true)
+			//.useSerializableCache(true)
+			//.useCacheManager(cacheManager)
+			//		                .build())
+			.build();
 		requery = EntityDataStore(configuration)//RxSupport.toReactiveStore(EntityDataStore<Persistable>(source.configuration));
 	}
 
-
 	private fun initOrma() {
 		orma = OrmaDatabase.builder(this)
-				.readOnMainThread(AccessThreadConstraint.WARNING) // optional
-				.writeOnMainThread(AccessThreadConstraint.FATAL) // optional
-				.trace(false)
-				.foreignKeys(false)
-				.name("orma_db")
-				.build();
+			.readOnMainThread(AccessThreadConstraint.WARNING) // optional
+			.writeOnMainThread(AccessThreadConstraint.FATAL) // optional
+			.trace(false)
+			.foreignKeys(false)
+			.name("orma_db")
+			.build();
 	}
-
 
 	private fun initSnappy() {
 		snappy = DBFactory.open(this)
@@ -115,9 +115,9 @@ class MainActivity : AppCompatActivity() {
 		// nothing to init
 	}
 
-
 	private fun initRealm() {
 		// nothing to init
+		realmConfig = RealmConfiguration.Builder(this).build()
 	}
 
 	private fun initOrmLite() {
@@ -139,7 +139,7 @@ class MainActivity : AppCompatActivity() {
 	private fun runTests() {
 		message("Run test with $ITERATIONS users, $ORDERS orders in each user.\nPlease wait until 'done' message")
 		observable<TestResult> {
-			realm = Realm.getInstance(this)
+			realm = Realm.getInstance(realmConfig)
 
 
 			it.onNext(TestResult(null, "Clean DB", profile { cleanAll() }))
@@ -157,7 +157,7 @@ class MainActivity : AppCompatActivity() {
 			                     "Orma read test", profile { ormaReadTest(false) }))
 
 			it.onNext(TestResult("DBFlow",
-			                     "DBFlow write test in transaction", profile { TransactionManager.transact(DBFlowDatabase.NAME, { dbflowWriteTest() }) },
+			                     "DBFlow write test in transaction", profile { FlowManager.getDatabase(DBFlowDatabase.NAME).executeTransaction { dbflowWriteTest() } },
 			                     "DBFlow full read test", profile { dbflowReadTest(false) }))
 
 			it.onNext(TestResult("GreenDAO",
@@ -183,26 +183,26 @@ class MainActivity : AppCompatActivity() {
 			realm.close()
 			it.onCompleted()
 		}
-				.subscribeOn(Schedulers.io())
-				.observeOn(AndroidSchedulers.mainThread())
-				.subscribe ({
-					            if (it.writeMessage != null)
-						            message("${it.writeMessage}: ${it.writeValue}ms")
+			.subscribeOn(Schedulers.io())
+			.observeOn(AndroidSchedulers.mainThread())
+			.subscribe({
+				           if (it.writeMessage != null)
+					           message("${it.writeMessage}: ${it.writeValue}ms")
 
-					            if (it.readMessage != null)
-						            message("${it.readMessage}: ${it.readValue}ms")
+				           if (it.readMessage != null)
+					           message("${it.readMessage}: ${it.readValue}ms")
 
-					            if (it.title != null)
-						            ChartData.results.add(it)
+				           if (it.title != null)
+					           ChartData.results.add(it)
 
-				            }, {
-					            it.printStackTrace()
-					            message("Failure")
-				            }, {
-					            message("done!")
-					            realm = Realm.getInstance(this)
-					            message("refresh realm: ${profile { realm.refresh() }}")
-				            })
+			           }, {
+				           it.printStackTrace()
+				           message("Failure")
+			           }, {
+				           message("done!")
+				           realm = Realm.getInstance(realmConfig)
+				           //message("refresh realm: ${profile { realm.refresh() }}")
+			           })
 
 
 	}
@@ -231,8 +231,8 @@ class MainActivity : AppCompatActivity() {
 		// realm clean
 		try {
 			realm.executeTransaction {
-				realm.clear(UserRealm::class.java)
-				realm.clear(OrderRealm::class.java)
+				realm.delete(UserRealm::class.java)
+				realm.delete(OrderRealm::class.java)
 				Log.d("#", "realm size=${realm.where(OrderRealm::class.java).count()}")
 			}
 		} catch (e: Exception) {
@@ -375,7 +375,7 @@ class MainActivity : AppCompatActivity() {
 
 	private fun realmReadTest() {
 
-		val users = realm.allObjects(UserRealm::class.java)
+		val users = realm.where(UserRealm::class.java).findAll()
 		// must read all fields explicitly due to realm lazyness
 		for ((i, u) in users.withIndex()) {
 			u.age
@@ -433,9 +433,9 @@ class MainActivity : AppCompatActivity() {
 	private fun dbflowReadTest(lazy: Boolean) {
 
 		val users = Select()
-				.from(UserDBFlow::class.java)
-				.where()
-				.queryList()
+			.from(UserDBFlow::class.java)
+			.where()
+			.queryList()
 
 		if (!lazy) {
 			//println("not lazy!")
