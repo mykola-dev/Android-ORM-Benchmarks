@@ -18,7 +18,7 @@ public class OrderRequery {
     public int count;
     public double price;
 
-    @ManyToOne(cascade = {})
+    @ManyToOne(/*cascade = {}*/)
     @Index
     public UserRequery user;
 

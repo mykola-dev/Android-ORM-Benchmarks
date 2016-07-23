@@ -10,7 +10,10 @@ import android.widget.TextView
 import butterknife.bindView
 import com.github.gfx.android.orma.AccessThreadConstraint
 import com.github.gfx.android.orma.SingleAssociation
-import com.github.gfx.android.orma.TransactionTask
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.j256.ormlite.table.TableUtils
 import com.raizlabs.android.dbflow.config.FlowManager
 import com.raizlabs.android.dbflow.sql.language.Delete
@@ -19,6 +22,8 @@ import com.snappydb.DB
 import com.snappydb.DBFactory
 import ds.dbtests.db.User
 import ds.dbtests.db.dbflow.*
+import ds.dbtests.db.firebase.OrderFB
+import ds.dbtests.db.firebase.UserFB
 import ds.dbtests.db.greendao.*
 import ds.dbtests.db.orma.OrderOrma
 import ds.dbtests.db.orma.OrmaDatabase
@@ -35,12 +40,13 @@ import io.realm.Realm
 import io.realm.RealmConfiguration
 import io.requery.Persistable
 import io.requery.android.sqlite.DatabaseSource
-import io.requery.sql.ConfigurationBuilder
 import io.requery.sql.EntityDataStore
+import io.requery.sql.TableCreationMode
 import rx.android.schedulers.AndroidSchedulers
 import rx.lang.kotlin.observable
 import rx.schedulers.Schedulers
 import java.util.*
+import java.util.concurrent.Semaphore
 
 class MainActivity : AppCompatActivity() {
 	companion object {
@@ -63,6 +69,9 @@ class MainActivity : AppCompatActivity() {
 	private lateinit var snappy: DB
 	private lateinit var orma: OrmaDatabase
 	private lateinit var requery: EntityDataStore<Persistable>
+	private var firebase = FirebaseDatabase.getInstance().reference
+
+
 	private var memory: MutableList<User> = arrayListOf()
 	private var realmConfig: RealmConfiguration? = null
 
@@ -79,22 +88,16 @@ class MainActivity : AppCompatActivity() {
 		initDBFlow()
 		initSnappy()
 		initOrma()
-		initStorio()    // todo
+		initFirebase()
 		initRequery()
 	}
 
 	private fun initRequery() {
-		// override onUpgrade to handle migrating to a new version
-		val source = DatabaseSource(this, Models.DEFAULT, 1)
-		val configuration = ConfigurationBuilder(source, Models.DEFAULT)
-			//.useDefaultLogging()
-			//.setEntityCache(EntityCacheBuilder(Models.DEFAULT)
-			//.useReferenceCache(true)
-			//.useSerializableCache(true)
-			//.useCacheManager(cacheManager)
-			//		                .build())
-			.build();
-		requery = EntityDataStore(configuration)//RxSupport.toReactiveStore(EntityDataStore<Persistable>(source.configuration));
+		val source = DatabaseSource(this, Models.DEFAULT, "requery_db", 2)
+		source.setTableCreationMode(TableCreationMode.DROP_CREATE);
+		//val configuration = ConfigurationBuilder(source, Models.DEFAULT).build();
+		val configuration = source.configuration
+		requery = EntityDataStore(configuration)
 	}
 
 	private fun initOrma() {
@@ -124,7 +127,8 @@ class MainActivity : AppCompatActivity() {
 		ormLite = OrmLiteDB.instance
 	}
 
-	private fun initStorio() {
+	private fun initFirebase() {
+		firebase.database.goOffline()
 	}
 
 
@@ -137,6 +141,7 @@ class MainActivity : AppCompatActivity() {
 
 
 	private fun runTests() {
+		logThread()
 		message("Run test with $ITERATIONS users, $ORDERS orders in each user.\nPlease wait until 'done' message")
 		observable<TestResult> {
 			realm = Realm.getInstance(realmConfig)
@@ -144,16 +149,17 @@ class MainActivity : AppCompatActivity() {
 
 			it.onNext(TestResult(null, "Clean DB", profile { cleanAll() }))
 
-			it.onNext(TestResult("ReQuery",
-			                     "ReQuery write test in transaction", profile { requery.runInTransaction { requeryWriteTest() } },
-			                     "ReQuery full read test", profile { requeryReadTest(false) }))
+			it.onNext(TestResult("Firebase",
+			                     "Firebase write test", profile { firebaseWriteTest() },
+			                     "Firebase full read test", profile { firebaseReadTest() }))
+
+			// doesn't work anymore.
+			/*it.onNext(TestResult("ReQuery",
+			                     "ReQuery write test in transaction", profile {  requeryWriteTest()  },
+			                     "ReQuery full read test", profile { requeryReadTest(false) }))*/
 
 			it.onNext(TestResult("Orma",
-			                     "Orma write test in transaction", profile {
-				orma.transactionSync(object : TransactionTask() {
-					override fun execute() = ormaWriteTest()
-				})
-			},
+			                     "Orma write test in transaction", profile { orma.transactionSync { ormaWriteTest() } },
 			                     "Orma read test", profile { ormaReadTest(false) }))
 
 			it.onNext(TestResult("DBFlow",
@@ -251,11 +257,106 @@ class MainActivity : AppCompatActivity() {
 		orma.deleteFromUserOrma().execute();
 
 		// requery clean
-		requery.delete(UserRequeryEntity::class.java).get().value()
-		requery.delete(OrderRequeryEntity::class.java).get().value()
+		try {
+			//requery.delete(UserRequeryEntity::class.java).get().value()
+			requery.delete(OrderRequeryEntity::class.java).get().value()
+		} catch (e: Exception) {
+			e.printStackTrace()
+		}
+
+		// firebase clean
+		firebase.removeValue()
 
 		// clean memory
 		memory.clear()
+	}
+
+
+	private fun firebaseWriteTest() {
+		for (i in 0..ITERATIONS) {
+			val u = UserFB()
+			u.id = i.toLong() + 1
+			u.name = names[i % names.size]
+			u.age = ages[i % ages.size]
+			u.height = 1.85
+			u.description = DESCRIPTION
+			u.login = "login"
+			u.password = "password123"
+			u.phone = "555-123-4567"
+			u.sex = "male"
+
+			for (k in 0..ORDERS) {
+				val o = OrderFB()
+				o.id = (i * (ORDERS + 1) + k + 1).toLong()
+				o.title = "${u.name}'s item"
+				o.price = 99.95
+				o.count = k % 2 + 1
+				o.created = System.currentTimeMillis()
+				o.expiration = System.currentTimeMillis() + 1000 * 60
+				o.description = DESCRIPTION
+				o.userId = u.id
+
+				// simulate some sort of relation since firebase doesnt support selects by field
+				firebase.child("orders${u.id}").push().setValue(o)
+			}
+
+			firebase.child("users").push().setValue(u)
+
+		}
+	}
+
+	private fun firebaseReadTest() {
+
+
+		println("firebase start read")
+
+		val semaphore = Semaphore(0)
+		val users = mutableListOf<UserFB>()
+
+		firebase.child("users").addListenerForSingleValueEvent(object : ValueEventListener {
+			override fun onCancelled(e: DatabaseError) {
+				println("firebase error! ${e.message}")
+			}
+
+			override fun onDataChange(data: DataSnapshot) {
+				println("firebase users size ${data.childrenCount}")
+				for (uData in data.children) {
+					val u = uData.getValue(UserFB::class.java)
+					//println("user id=${u.id} name=${u.name} orders=${u.orders.size}")
+					users.add(u)
+				}
+				println("firebase users retrieved")
+				semaphore.release()
+			}
+
+		})
+		semaphore.acquire()
+
+		for (user in users) {
+			firebase.child("orders${user.id}").addListenerForSingleValueEvent(object : ValueEventListener {
+				override fun onCancelled(e: DatabaseError) {
+					println("firebase error! ${e.message}")
+				}
+
+				override fun onDataChange(data: DataSnapshot) {
+					//println("firebase orders size ${data.childrenCount} for user ${user.id}")
+					for (order in data.children) {
+						val o = order.getValue(OrderFB::class.java)
+						//println("user id=${u.id} name=${u.name} orders=${u.orders.size}")
+					}
+					//println("firebase orders retrieved")
+					semaphore.release()
+				}
+
+
+			})
+			semaphore.acquire()
+		}
+		println("firebase read end")
+	}
+
+	private fun logThread() {
+		println("thread: ${Thread.currentThread().id}")
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

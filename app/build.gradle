@@ -68,9 +68,12 @@ dependencies {
     compile "com.github.Raizlabs.DBFlow:dbflow:${dbflow_version}"
     //compile "com.github.Raizlabs.DBFlow:dbflow-kotlinextensions:${dbflow_version}"
     compile 'com.snappydb:snappydb-lib:0.5.2'
-    compile 'io.requery:requery:1.0.0-beta15'
-    compile 'io.requery:requery-android:1.0.0-beta15' // for android
-    kapt 'io.requery:requery-processor:1.0.0-beta15'   // prefer an APT plugin
+    compile 'io.requery:requery:1.0.0-rc2'
+    compile 'io.requery:requery-android:1.0.0-rc2' // for android
+    kapt 'io.requery:requery-processor:1.0.0-rc2'   // prefer an APT plugin
+    compile 'io.requery:sqlite-android:3.13.0-1'
+    compile 'com.google.firebase:firebase-core:9.2.1'
+    compile 'com.google.firebase:firebase-database:9.2.1'
 
     compile 'com.esotericsoftware.kryo:kryo:2.24.0'
     compile 'com.jakewharton:kotterknife:0.1.0-SNAPSHOT'
@@ -88,3 +91,6 @@ dependencies {
     compile 'com.github.PhilJay:MPAndroidChart:v2.2.2'
 
 }
+
+apply plugin: 'com.google.gms.google-services'
+

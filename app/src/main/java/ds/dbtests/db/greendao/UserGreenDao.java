@@ -236,34 +236,6 @@ public class UserGreenDao implements java.io.Serializable, ds.dbtests.db.User {
 		orderGreenDaoList = (List<OrderGreenDao>) list;
 	}
 
-/*
-	public ArrayList<OrderGreenDao> getOrdersRaw() {
-		Kryo kryo = kryos.get();
-		Input input = new Input(new ByteArrayInputStream(rawOrders));
-        ArrayList<OrderGreenDao> list = (ArrayList<OrderGreenDao>) kryo.readClassAndObject(input);
-		input.close();
-        //Log.v("#","read kryo size="+list.size());
-		return list;
-	}
-
-
-	public void setOrdersRaw(ArrayList<OrderGreenDao> list) {
-		Kryo kryo = kryos.get();
-		Output output = new Output(new ByteArrayOutputStream());
-		kryo.writeClassAndObject(output, list);
-		rawOrders = output.toBytes();
-		output.close();
-	}*/
-
-   /* public ArrayList<OrderGreenDao> getOrdersRaw() {
-        ArrayList<OrderGreenDao> list = (ArrayList<OrderGreenDao>) Fst.INSTANCE$.deserialize(rawOrders);
-        return list;
-    }
-
-
-    public void setOrdersRaw(ArrayList<OrderGreenDao> list) {
-        rawOrders = Fst.INSTANCE$.serialize(list);
-    }*/
     // KEEP METHODS END
 
 }
