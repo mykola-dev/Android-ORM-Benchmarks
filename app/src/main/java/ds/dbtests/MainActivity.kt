@@ -149,9 +149,13 @@ class MainActivity : AppCompatActivity() {
 
 			it.onNext(TestResult(null, "Clean DB", profile { cleanAll() }))
 
-			it.onNext(TestResult("Firebase",
+			/*it.onNext(TestResult("Firebase",
 			                     "Firebase write test", profile { firebaseWriteTest() },
-			                     "Firebase full read test", profile { firebaseReadTest() }))
+			                     "Firebase full read test", profile { firebaseReadTest() }))*/
+
+			it.onNext(TestResult("Firebase (no relations)",
+			                     "Firebase write test NoSql style", profile { firebaseWriteTestNoSql() },
+			                     "Firebase full read test NoSql style", profile { firebaseReadTestNoSql() }))
 
 			it.onNext(TestResult("ReQuery",
 			                     "ReQuery write test in transaction", profile { requery.runInTransaction { requeryWriteTest() } },
@@ -169,7 +173,7 @@ class MainActivity : AppCompatActivity() {
 			                     "GreenDao write test in transaction", profile { greenDao.runInTx { greenDaoWriteTest() } },
 			                     "GreenDao full read test", profile { greenDaoReadTest(false) }))
 
-			it.onNext(TestResult("Realm",
+			it.onNext(TestResult("Realm (no relations)",
 			                     "Realm write test in transaction", profile { realm.executeTransaction { realmWriteTest() } },
 			                     "Realm read test", profile { realmReadTest() }))
 
@@ -352,6 +356,62 @@ class MainActivity : AppCompatActivity() {
 			semaphore.acquire()
 		}
 		println("firebase read end")
+	}
+
+	private fun firebaseWriteTestNoSql() {
+		for (i in 0..ITERATIONS) {
+			val u = UserFB()
+			u.id = i.toLong() + 1
+			u.name = names[i % names.size]
+			u.age = ages[i % ages.size]
+			u.height = 1.85
+			u.description = DESCRIPTION
+			u.login = "login"
+			u.password = "password123"
+			u.phone = "555-123-4567"
+			u.sex = "male"
+
+			for (k in 0..ORDERS) {
+				val o = OrderFB()
+				o.id = (i * (ORDERS + 1) + k + 1).toLong()
+				o.title = "${u.name}'s item"
+				o.price = 99.95
+				o.count = k % 2 + 1
+				o.created = System.currentTimeMillis()
+				o.expiration = System.currentTimeMillis() + 1000 * 60
+				o.description = DESCRIPTION
+				o.userId = u.id
+
+				// simulate some sort of relation since firebase doesnt support selects by field
+				u.orders.add(o)
+			}
+
+			firebase.child("users").push().setValue(u)
+
+		}
+	}
+
+	private fun firebaseReadTestNoSql() {
+		val semaphore = Semaphore(0)
+
+		firebase.child("users").addListenerForSingleValueEvent(object : ValueEventListener {
+			override fun onCancelled(e: DatabaseError) {
+				println("firebase error! ${e.message}")
+			}
+
+			override fun onDataChange(data: DataSnapshot) {
+				println("firebase users size ${data.childrenCount}")
+				for (uData in data.children) {
+					val u = uData.getValue(UserFB::class.java)
+					//println("user id=${u.id} name=${u.name} orders=${u.orders.size}")
+				}
+				println("firebase users retrieved")
+				semaphore.release()
+			}
+
+		})
+		semaphore.acquire()
+
 	}
 
 	private fun logThread() {
