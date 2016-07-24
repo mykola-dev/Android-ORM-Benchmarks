@@ -153,10 +153,9 @@ class MainActivity : AppCompatActivity() {
 			                     "Firebase write test", profile { firebaseWriteTest() },
 			                     "Firebase full read test", profile { firebaseReadTest() }))
 
-			// doesn't work anymore.
-			/*it.onNext(TestResult("ReQuery",
-			                     "ReQuery write test in transaction", profile {  requeryWriteTest()  },
-			                     "ReQuery full read test", profile { requeryReadTest(false) }))*/
+			it.onNext(TestResult("ReQuery",
+			                     "ReQuery write test in transaction", profile { requery.runInTransaction { requeryWriteTest() } },
+			                     "ReQuery full read test", profile { requeryReadTest(false) }))
 
 			it.onNext(TestResult("Orma",
 			                     "Orma write test in transaction", profile { orma.transactionSync { ormaWriteTest() } },
@@ -258,7 +257,7 @@ class MainActivity : AppCompatActivity() {
 
 		// requery clean
 		try {
-			//requery.delete(UserRequeryEntity::class.java).get().value()
+			requery.delete(UserRequeryEntity::class.java).get().value()
 			requery.delete(OrderRequeryEntity::class.java).get().value()
 		} catch (e: Exception) {
 			e.printStackTrace()

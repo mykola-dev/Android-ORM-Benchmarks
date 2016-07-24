@@ -20,7 +20,8 @@ public class UserRequery {
     public int age;
     public double height;
 
-    @OneToMany(/*cascade = {}*/)
+    @OneToMany(cascade = {})
+    //@Transient
     public List<OrderRequery> orders;
 
 }
