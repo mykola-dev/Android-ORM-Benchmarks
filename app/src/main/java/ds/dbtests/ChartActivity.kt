@@ -57,7 +57,7 @@ class ChartActivity : AppCompatActivity(), OnChartValueSelectedListener {
 		if (tests.size == 0)
 			return
 
-		Collections.sort(tests) { lhs, rhs -> if (lhs.readValue <= rhs.readValue) 1 else -1 }
+		tests.sortByDescending { it.readValue }
 
 		val xVals = ArrayList<String>()
 		val writeVals = ArrayList<BarEntry>()

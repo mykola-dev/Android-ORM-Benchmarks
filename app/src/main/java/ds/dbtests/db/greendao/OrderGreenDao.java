@@ -18,7 +18,7 @@ import ds.dbtests.db.User;
  * Entity mapped to table "ORDER_GREEN_DAO".
  */
 @Entity(active = true)
-public class OrderGreenDao implements java.io.Serializable, ds.dbtests.db.Order {
+public class OrderGreenDao implements /*java.io.Serializable,*/ ds.dbtests.db.Order {
 
     @Id(autoincrement = true)
     private Long id;
@@ -74,13 +74,6 @@ public class OrderGreenDao implements java.io.Serializable, ds.dbtests.db.Order 
         this.expiration = expiration;
         this.description = description;
         this.userId = userId;
-    }
-
-    /** called by internal mechanisms, do not call yourself. */
-    @Generated(hash = 453244264)
-    public void __setDaoSession(DaoSession daoSession) {
-        this.daoSession = daoSession;
-        myDao = daoSession != null ? daoSession.getOrderGreenDaoDao() : null;
     }
 
     public Long getId() {
@@ -227,5 +220,12 @@ public class OrderGreenDao implements java.io.Serializable, ds.dbtests.db.Order 
 		setUser((UserGreenDao) user);
 	}
     // KEEP METHODS END
+
+    /** called by internal mechanisms, do not call yourself. */
+    @Generated(hash = 453244264)
+    public void __setDaoSession(DaoSession daoSession) {
+        this.daoSession = daoSession;
+        myDao = daoSession != null ? daoSession.getOrderGreenDaoDao() : null;
+    }
 
 }

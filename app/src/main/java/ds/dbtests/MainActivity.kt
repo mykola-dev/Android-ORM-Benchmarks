@@ -21,7 +21,9 @@ import com.raizlabs.android.dbflow.sql.language.Select
 import com.snappydb.DB
 import com.snappydb.DBFactory
 import ds.dbtests.db.User
-import ds.dbtests.db.dbflow.*
+import ds.dbtests.db.dbflow.DBFlowDatabase
+import ds.dbtests.db.dbflow.OrderDBFlow
+import ds.dbtests.db.dbflow.UserDBFlow
 import ds.dbtests.db.firebase.OrderFB
 import ds.dbtests.db.firebase.UserFB
 import ds.dbtests.db.greendao.*
@@ -36,15 +38,17 @@ import ds.dbtests.db.realm.UserRealm
 import ds.dbtests.db.requery.Models
 import ds.dbtests.db.requery.OrderRequeryEntity
 import ds.dbtests.db.requery.UserRequeryEntity
+import ds.dbtests.db.snappydb.OrderSnappy
+import ds.dbtests.db.snappydb.UserSnappy
+import io.reactivex.Observable.create
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import io.realm.Realm
 import io.realm.RealmConfiguration
 import io.requery.Persistable
 import io.requery.android.sqlite.DatabaseSource
 import io.requery.sql.EntityDataStore
 import io.requery.sql.TableCreationMode
-import rx.android.schedulers.AndroidSchedulers
-import rx.lang.kotlin.observable
-import rx.schedulers.Schedulers
 import java.util.*
 import java.util.concurrent.Semaphore
 
@@ -107,7 +111,7 @@ class MainActivity : AppCompatActivity() {
 			.trace(false)
 			.foreignKeys(false)
 			.name("orma_db")
-			.build();
+			.build()
 	}
 
 	private fun initSnappy() {
@@ -120,7 +124,8 @@ class MainActivity : AppCompatActivity() {
 
 	private fun initRealm() {
 		// nothing to init
-		realmConfig = RealmConfiguration.Builder(this).build()
+		Realm.init(this)
+		realmConfig = RealmConfiguration.Builder().build()
 	}
 
 	private fun initOrmLite() {
@@ -143,7 +148,7 @@ class MainActivity : AppCompatActivity() {
 	private fun runTests() {
 		logThread()
 		message("Run test with $ITERATIONS users, $ORDERS orders in each user.\nPlease wait until 'done' message")
-		observable<TestResult> {
+		create<TestResult> {
 			realm = Realm.getInstance(realmConfig)
 
 
@@ -190,7 +195,7 @@ class MainActivity : AppCompatActivity() {
 			                     "Memory read test", profile { memoryReadTest() }))
 
 			realm.close()
-			it.onCompleted()
+			it.onComplete()
 		}
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread())
@@ -507,8 +512,7 @@ class MainActivity : AppCompatActivity() {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	private fun realmWriteTest() {
 		for (i in 0..ITERATIONS) {
-			val u = realm.createObject(UserRealm::class.java)
-			u.id = i.toLong() + 1
+			val u = realm.createObject(UserRealm::class.java,i.toLong() + 1)
 			u.name = names[i % names.size]
 			u.age = ages[i % ages.size]
 			u.height = 1.85
@@ -518,9 +522,8 @@ class MainActivity : AppCompatActivity() {
 			u.phone = "555-123-4567"
 			u.sex = "male"
 			for (k in 0..ORDERS) {
-				val o = realm.createObject(OrderRealm::class.java)
+				val o = realm.createObject(OrderRealm::class.java,(i * (ORDERS + 1) + k + 1).toLong())
 				//val o = OrderRealm()
-				o.id = (i * (ORDERS + 1) + k + 1).toLong()
 				o.title = "${u.name}'s item"
 				o.price = 99.95
 				o.count = k % 2 + 1
@@ -601,6 +604,7 @@ class MainActivity : AppCompatActivity() {
 			//println("not lazy!")
 			for ((i, u) in users.withIndex()) {
 				for (o in u.orders) {
+                    //println(o.description)
 				}
 			}
 		}

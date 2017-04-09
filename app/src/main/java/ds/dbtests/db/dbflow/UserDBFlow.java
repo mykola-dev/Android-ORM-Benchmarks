@@ -8,7 +8,7 @@ import com.raizlabs.android.dbflow.structure.BaseModel;
 import java.util.List;
 
 @Table(database = DBFlowDatabase.class, cachingEnabled = true)
-@ModelContainer
+//@ModelContainer
 public class UserDBFlow extends BaseModel {
 
     @PrimaryKey(autoincrement = true) public long id;

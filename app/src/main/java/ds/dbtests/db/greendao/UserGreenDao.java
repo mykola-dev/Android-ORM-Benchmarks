@@ -1,5 +1,7 @@
 package ds.dbtests.db.greendao;
 
+import android.support.annotation.NonNull;
+
 import org.greenrobot.greendao.DaoException;
 import org.greenrobot.greendao.annotation.Convert;
 import org.greenrobot.greendao.annotation.Entity;
@@ -7,6 +9,7 @@ import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.JoinProperty;
 import org.greenrobot.greendao.annotation.ToMany;
+import org.greenrobot.greendao.converter.PropertyConverter;
 
 import java.util.Collection;
 import java.util.List;
@@ -17,11 +20,12 @@ import ds.dbtests.db.Order;
 
 // KEEP INCLUDES - put your custom includes here
 // KEEP INCLUDES END
+
 /**
  * Entity mapped to table "USER_GREEN_DAO".
  */
 @Entity(active = true)
-public class UserGreenDao implements java.io.Serializable, ds.dbtests.db.User {
+public class UserGreenDao implements /*java.io.Serializable,*/ ds.dbtests.db.User {
 
     @Id(autoincrement = true)
     private Long id;
@@ -44,7 +48,7 @@ public class UserGreenDao implements java.io.Serializable, ds.dbtests.db.User {
     @Generated(hash = 1911154127)
     private transient UserGreenDaoDao myDao;
     @ToMany(joinProperties = {
-        @JoinProperty(name = "id", referencedName = "userId")
+            @JoinProperty(name = "id", referencedName = "userId")
     })
     private List<OrderGreenDao> orderGreenDaoList;
 
@@ -60,7 +64,8 @@ public class UserGreenDao implements java.io.Serializable, ds.dbtests.db.User {
     }
 
     @Generated(hash = 1811189815)
-    public UserGreenDao(Long id, int age, double height, String name, String login, String password, String sex, String description, String phone, List<OrderGreenDao> rawOrders) {
+    public UserGreenDao(Long id, int age, double height, String name, String login, String password, String sex, String description, String phone,
+            List<OrderGreenDao> rawOrders) {
         this.id = id;
         this.age = age;
         this.height = height;
@@ -71,13 +76,6 @@ public class UserGreenDao implements java.io.Serializable, ds.dbtests.db.User {
         this.description = description;
         this.phone = phone;
         this.rawOrders = rawOrders;
-    }
-
-    /** called by internal mechanisms, do not call yourself. */
-    @Generated(hash = 767560106)
-    public void __setDaoSession(DaoSession daoSession) {
-        this.daoSession = daoSession;
-        myDao = daoSession != null ? daoSession.getUserGreenDaoDao() : null;
     }
 
     public Long getId() {
@@ -174,7 +172,7 @@ public class UserGreenDao implements java.io.Serializable, ds.dbtests.db.User {
             OrderGreenDaoDao targetDao = daoSession.getOrderGreenDaoDao();
             List<OrderGreenDao> orderGreenDaoListNew = targetDao._queryUserGreenDao_OrderGreenDaoList(id);
             synchronized (this) {
-                if(orderGreenDaoList == null) {
+                if (orderGreenDaoList == null) {
                     orderGreenDaoList = orderGreenDaoListNew;
                 }
             }
@@ -225,16 +223,38 @@ public class UserGreenDao implements java.io.Serializable, ds.dbtests.db.User {
     }
 
     // KEEP METHODS - put your custom methods here
-	@Override
-	public List<Order> getOrders() {
-		return (List<Order>) (Object) getOrderGreenDaoList();
-	}
+    @SuppressWarnings("unchecked")
+    @Override
+    @NonNull
+    public List<Order> getOrders() {
+        return (List<Order>) (Object) getOrderGreenDaoList();
+    }
 
 
-	@Override
-	public void setOrders(final Collection<? extends Order> list) {
-		orderGreenDaoList = (List<OrderGreenDao>) list;
-	}
+    @Override
+    public void setOrders(final Collection<? extends Order> list) {
+        orderGreenDaoList = (List<OrderGreenDao>) list;
+    }
+
+    /** called by internal mechanisms, do not call yourself. */
+    @Generated(hash = 767560106)
+    public void __setDaoSession(DaoSession daoSession) {
+        this.daoSession = daoSession;
+        myDao = daoSession != null ? daoSession.getUserGreenDaoDao() : null;
+    }
+
+    @SuppressWarnings("unchecked")
+    static class OrderSerializer implements PropertyConverter<List<OrderGreenDao>, byte[]> {
+        @Override
+        public List<OrderGreenDao> convertToEntityProperty(byte[] databaseValue) {
+            return (List<OrderGreenDao>) Fst.INSTANCE.deserialize(databaseValue);
+        }
+
+        @Override
+        public byte[] convertToDatabaseValue(List<OrderGreenDao> entityProperty) {
+            return Fst.INSTANCE.serialize(entityProperty);
+        }
+    }
 
     // KEEP METHODS END
 

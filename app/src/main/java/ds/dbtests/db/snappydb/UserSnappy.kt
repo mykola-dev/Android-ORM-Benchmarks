@@ -1,12 +1,7 @@
-package ds.dbtests.db.dbflow
+package ds.dbtests.db.snappydb
 
-import com.raizlabs.android.dbflow.annotation.*
-import com.raizlabs.android.dbflow.sql.language.Select
-import com.raizlabs.android.dbflow.structure.BaseModel
-import com.raizlabs.android.dbflow.structure.container.ForeignKeyContainer
 import ds.dbtests.db.Order
 import ds.dbtests.db.User
-import java.util.*
 
 class UserSnappy : User {
 
@@ -28,7 +23,7 @@ class UserSnappy : User {
 
 	private var ordersSnappy: MutableList<OrderSnappy> = arrayListOf()
 
-	fun addOrder(o:OrderSnappy){
+	fun addOrder(o: OrderSnappy){
 		ordersSnappy.add(o)
 	}
 
