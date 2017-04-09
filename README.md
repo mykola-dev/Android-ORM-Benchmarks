@@ -6,6 +6,7 @@
 - ORMLite https://github.com/j256/ormlite-android
 - Requery https://github.com/requery/requery
 - SnappyDB https://github.com/nhachicha/SnappyDB
+- Firebase (just for lulz)
 
 ![](pics/screenshot.png)
 
