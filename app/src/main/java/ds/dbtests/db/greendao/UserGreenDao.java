@@ -3,13 +3,11 @@ package ds.dbtests.db.greendao;
 import android.support.annotation.NonNull;
 
 import org.greenrobot.greendao.DaoException;
-import org.greenrobot.greendao.annotation.Convert;
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.JoinProperty;
 import org.greenrobot.greendao.annotation.ToMany;
-import org.greenrobot.greendao.converter.PropertyConverter;
 
 import java.util.Collection;
 import java.util.List;
@@ -38,9 +36,6 @@ public class UserGreenDao implements /*java.io.Serializable,*/ ds.dbtests.db.Use
     private String description;
     private String phone;
 
-    @Convert(converter = OrderSerializer.class, columnType = byte[].class)
-    private List<OrderGreenDao> rawOrders;
-
     /** Used to resolve relations */
     @Generated(hash = 2040040024)
     private transient DaoSession daoSession;
@@ -63,9 +58,9 @@ public class UserGreenDao implements /*java.io.Serializable,*/ ds.dbtests.db.Use
         this.id = id;
     }
 
-    @Generated(hash = 1811189815)
-    public UserGreenDao(Long id, int age, double height, String name, String login, String password, String sex, String description, String phone,
-            List<OrderGreenDao> rawOrders) {
+    @Generated(hash = 1637278874)
+    public UserGreenDao(Long id, int age, double height, String name, String login, String password, String sex,
+            String description, String phone) {
         this.id = id;
         this.age = age;
         this.height = height;
@@ -75,7 +70,6 @@ public class UserGreenDao implements /*java.io.Serializable,*/ ds.dbtests.db.Use
         this.sex = sex;
         this.description = description;
         this.phone = phone;
-        this.rawOrders = rawOrders;
     }
 
     public Long getId() {
@@ -148,14 +142,6 @@ public class UserGreenDao implements /*java.io.Serializable,*/ ds.dbtests.db.Use
 
     public void setPhone(String phone) {
         this.phone = phone;
-    }
-
-    public List<OrderGreenDao> getRawOrders() {
-        return rawOrders;
-    }
-
-    public void setRawOrders(List<OrderGreenDao> rawOrders) {
-        this.rawOrders = rawOrders;
     }
 
     /**
@@ -241,19 +227,6 @@ public class UserGreenDao implements /*java.io.Serializable,*/ ds.dbtests.db.Use
     public void __setDaoSession(DaoSession daoSession) {
         this.daoSession = daoSession;
         myDao = daoSession != null ? daoSession.getUserGreenDaoDao() : null;
-    }
-
-    @SuppressWarnings("unchecked")
-    static class OrderSerializer implements PropertyConverter<List<OrderGreenDao>, byte[]> {
-        @Override
-        public List<OrderGreenDao> convertToEntityProperty(byte[] databaseValue) {
-            return (List<OrderGreenDao>) Fst.INSTANCE.deserialize(databaseValue);
-        }
-
-        @Override
-        public byte[] convertToDatabaseValue(List<OrderGreenDao> entityProperty) {
-            return Fst.INSTANCE.serialize(entityProperty);
-        }
     }
 
     // KEEP METHODS END

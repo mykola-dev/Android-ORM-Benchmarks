@@ -1,0 +1,102 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:3052155692983338597",
+      "lastPropertyId": "9:5680599390499331371",
+      "name": "OrderBox",
+      "properties": [
+        {
+          "id": "1:8729756949400444000",
+          "name": "id"
+        },
+        {
+          "id": "2:6335063551321622490",
+          "name": "title"
+        },
+        {
+          "id": "3:6387580835613096947",
+          "name": "price"
+        },
+        {
+          "id": "4:2005818079908249803",
+          "name": "count"
+        },
+        {
+          "id": "5:5566431553947545352",
+          "name": "created"
+        },
+        {
+          "id": "6:8659284856683359185",
+          "name": "expiration"
+        },
+        {
+          "id": "7:2674424989060710381",
+          "name": "description"
+        },
+        {
+          "id": "9:5680599390499331371",
+          "indexId": "1:3420884453405280558",
+          "name": "userId"
+        }
+      ]
+    },
+    {
+      "id": "2:7259040085820859491",
+      "lastPropertyId": "11:7852989507892736129",
+      "name": "UserBox",
+      "properties": [
+        {
+          "id": "1:3959393091527181675",
+          "name": "id"
+        },
+        {
+          "id": "2:5505069154706475581",
+          "name": "age"
+        },
+        {
+          "id": "3:7123704602774178556",
+          "name": "height"
+        },
+        {
+          "id": "4:9190189809884933099",
+          "name": "name"
+        },
+        {
+          "id": "5:9037366412318974785",
+          "name": "login"
+        },
+        {
+          "id": "6:7023010357429710186",
+          "name": "password"
+        },
+        {
+          "id": "7:4117456730004278892",
+          "name": "sex"
+        },
+        {
+          "id": "8:113708315554172314",
+          "name": "description"
+        },
+        {
+          "id": "9:2596839985584304932",
+          "name": "phone"
+        }
+      ]
+    }
+  ],
+  "lastEntityId": "2:7259040085820859491",
+  "lastIndexId": "1:3420884453405280558",
+  "lastSequenceId": "0:0",
+  "modelVersion": 2,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [
+    4659821816084033903,
+    4667045475012416812,
+    7852989507892736129
+  ],
+  "version": 1
+}

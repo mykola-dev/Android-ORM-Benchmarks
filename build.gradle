@@ -6,6 +6,7 @@ buildscript {
     repositories {
         jcenter()
         maven { url 'https://dl.bintray.com/kotlin/kotlin-eap-1.1' }
+        maven { url "http://objectbox.net/beta-repo/" }
 
     }
     dependencies {
@@ -16,6 +17,7 @@ buildscript {
         classpath 'org.greenrobot:greendao-gradle-plugin:3.2.2'
         classpath "io.realm:realm-gradle-plugin:3.1.1"
         classpath 'com.google.gms:google-services:3.0.0'
+        classpath 'io.objectbox:objectbox-gradle-plugin:0.9.9'
 
     }
 }
@@ -28,6 +30,7 @@ allprojects {
         maven { url 'https://github.com/uPhyca/stetho-realm/raw/master/maven-repo' }
         maven { url "https://jitpack.io" }
         maven { url 'https://dl.bintray.com/kotlin/kotlin-eap-1.1' }
+        maven { url "http://objectbox.net/beta-repo/" }
     }
 }
 
