@@ -7,6 +7,7 @@
 - ORMLite https://github.com/j256/ormlite-android
 - Requery https://github.com/requery/requery
 - SnappyDB https://github.com/nhachicha/SnappyDB
+- Room https://developer.android.com/topic/libraries/architecture/room.html
 - Firebase (you need to setup json config manually)
 
 ![](pics/screenshot.png)

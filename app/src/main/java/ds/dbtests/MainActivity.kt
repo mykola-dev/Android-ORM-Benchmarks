@@ -1,5 +1,6 @@
 package ds.dbtests
 
+import android.arch.persistence.room.Room
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -44,6 +45,9 @@ import ds.dbtests.db.realm.UserRealm
 import ds.dbtests.db.requery.Models
 import ds.dbtests.db.requery.OrderRequeryEntity
 import ds.dbtests.db.requery.UserRequeryEntity
+import ds.dbtests.db.room.AppDatabase
+import ds.dbtests.db.room.OrderRoom
+import ds.dbtests.db.room.UserRoom
 import ds.dbtests.db.snappydb.OrderSnappy
 import ds.dbtests.db.snappydb.UserSnappy
 import io.objectbox.BoxStore
@@ -82,6 +86,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var requery: EntityDataStore<Persistable>
     private var firebase = FirebaseDatabase.getInstance().reference
     private lateinit var boxStore: BoxStore
+    private lateinit var room: AppDatabase
 
 
     private var memory: MutableList<User> = arrayListOf()
@@ -103,6 +108,11 @@ class MainActivity : AppCompatActivity() {
         initFirebase()
         initRequery()
         initObjectBox()
+        initRoom()
+    }
+
+    private fun initRoom() {
+        room = Room.databaseBuilder(applicationContext, AppDatabase::class.java, "room-db").build()
     }
 
     private fun initObjectBox() {
@@ -166,6 +176,10 @@ class MainActivity : AppCompatActivity() {
 
 
             it.onNext(TestResult(null, "Clean DB", profile { cleanAll() }))
+
+            it.onNext(TestResult("Room",
+                "Room write test", profile { boxStore.runInTx { roomWriteTest() } },
+                "Room full read test", profile { boxStore.runInReadTx { roomReadTest() } }))
 
             it.onNext(TestResult("ObjectBox",
                 "ObjectBox write test", profile { boxStore.runInTx { objectBoxWriteTestNoSql() } },
@@ -293,6 +307,10 @@ class MainActivity : AppCompatActivity() {
         // ObjectBox clean
         boxStore.boxFor(UserBox::class.java).removeAll()
         boxStore.boxFor(OrderBox::class.java).removeAll()
+
+        // room
+        room.orderDao().deleteAll()
+        room.userDao().deleteAll()
 
         // clean memory
         memory.clear()
@@ -485,11 +503,60 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     private fun logThread() {
         println("thread: ${Thread.currentThread().id}")
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    private fun roomWriteTest() {
+
+        val users = mutableListOf<UserRoom>()
+        val orders = mutableListOf<OrderRoom>()
+
+        for (i in 0..ITERATIONS) {
+            val u: UserRoom = UserRoom()
+            u.name = names[i % names.size]
+            u.age = ages[i % ages.size]
+            u.height = 1.85
+            u.description = DESCRIPTION
+            u.login = "login"
+            u.password = "password123"
+            u.phone = "555-123-4567"
+            u.sex = "male"
+            users.add(u)
+        }
+
+        val userIds = room.userDao().insert(users)
+
+        for (id in userIds) {
+            for (k in 0..ORDERS) {
+                val o = OrderRoom()
+                o.title = "some item"
+                o.price = 99.95
+                o.count = k % 2 + 1
+                o.created = Date()
+                o.expiration = Date(System.currentTimeMillis() + 1000 * 60)
+                o.description = DESCRIPTION
+                o.userId = id
+                orders += o
+            }
+        }
+        room.orderDao().insert(orders)
+    }
+
+    private fun roomReadTest() {
+        with(room) {
+            val users = userDao().fetchAll()
+            for (u in users) {
+                orderDao().fetchOrders(u.id)
+            }
+        }
+    }
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     private fun greenDaoWriteTest() {
         for (i in 0..ITERATIONS) {
             val u: UserGreenDao = UserGreenDao()
@@ -705,7 +772,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private fun requeryWriteTest(): Unit {
         println("requery write")
@@ -837,7 +904,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.main, menu)

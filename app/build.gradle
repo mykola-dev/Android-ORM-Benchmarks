@@ -73,6 +73,8 @@ dependencies {
     compile 'com.google.firebase:firebase-database:10.2.1'
     compile 'io.objectbox:objectbox-android:0.9.9'
     compile 'io.objectbox:objectbox-daocompat:0.9.9'
+    compile "android.arch.persistence.room:runtime:1.0.0-alpha3"
+    kapt "android.arch.persistence.room:compiler:1.0.0-alpha3"
 
     compile 'com.esotericsoftware.kryo:kryo:2.24.0'
     compile 'com.jakewharton:kotterknife:0.1.0-SNAPSHOT'
