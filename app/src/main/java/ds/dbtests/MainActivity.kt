@@ -1,6 +1,7 @@
 package ds.dbtests
 
 import android.arch.persistence.room.Room
+import android.arch.persistence.room.RoomDatabase
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -509,10 +510,7 @@ class MainActivity : AppCompatActivity() {
         println("thread: ${Thread.currentThread().id}")
     }
 
-    private fun roomWriteTest() {
-
-        val users = mutableListOf<UserRoom>()
-        val orders = mutableListOf<OrderRoom>()
+    private fun roomWriteTest() = room.run {
 
         for (i in 0..ITERATIONS) {
             val u: UserRoom = UserRoom()
@@ -524,34 +522,39 @@ class MainActivity : AppCompatActivity() {
             u.password = "password123"
             u.phone = "555-123-4567"
             u.sex = "male"
-            users.add(u)
-        }
 
-        val userIds = room.userDao().insert(users)
+            val id = userDao().insert(u)
+            //println("user id=$id")
 
-        for (id in userIds) {
             for (k in 0..ORDERS) {
                 val o = OrderRoom()
-                o.title = "some item"
+                o.title = "${u.name}'s item"
                 o.price = 99.95
                 o.count = k % 2 + 1
                 o.created = Date()
                 o.expiration = Date(System.currentTimeMillis() + 1000 * 60)
                 o.description = DESCRIPTION
                 o.userId = id
-                orders += o
+                orderDao().insert(o)
             }
         }
-        room.orderDao().insert(orders)
+
     }
 
-    private fun roomReadTest() {
-        with(room) {
-            val users = userDao().fetchAll()
-            for (u in users) {
-                orderDao().fetchOrders(u.id)
-            }
+    private fun roomReadTest() = room.run {
+        val users = userDao().fetchAll()
+        //println("room users ${users.size}")
+        for (u in users) {
+            val orders = orderDao().fetchOrders(u.id)
+            //println("room orders ${orders.size}")
         }
+    }
+
+    private inline fun <T : RoomDatabase> T.run(block: T.() -> Unit) {
+        beginTransaction()
+        block(this)
+        setTransactionSuccessful()
+        endTransaction()
     }
 
 
