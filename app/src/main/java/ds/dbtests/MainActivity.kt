@@ -9,7 +9,6 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
-import butterknife.bindView
 import com.github.gfx.android.orma.AccessThreadConstraint
 import com.github.gfx.android.orma.SingleAssociation
 import com.google.firebase.database.DataSnapshot
@@ -61,6 +60,7 @@ import io.requery.Persistable
 import io.requery.android.sqlite.DatabaseSource
 import io.requery.sql.EntityDataStore
 import io.requery.sql.TableCreationMode
+import kotterknife.bindView
 import java.util.*
 import java.util.concurrent.Semaphore
 
@@ -416,7 +416,7 @@ class MainActivity : AppCompatActivity() {
                 for (uData in data.children) {
                     val u = uData.getValue(UserFB::class.java)
                     //println("user id=${u.id} name=${u.name} orders=${u.orders.size}")
-                    users.add(u)
+                    users.add(u!!)
                 }
                 println("firebase users retrieved")
                 semaphore.release()
@@ -777,7 +777,7 @@ class MainActivity : AppCompatActivity() {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private fun requeryWriteTest(): Unit {
+    private fun requeryWriteTest() {
         println("requery write")
         for (i in 0..ITERATIONS) {
             var u = UserRequeryEntity()
@@ -806,7 +806,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun requeryReadTest(lazy: Boolean): Unit {
+    private fun requeryReadTest(lazy: Boolean) {
         val users = requery.select(UserRequeryEntity::class.java).get().toList()
         println("requery users=${users.size}")
         if (!lazy) {

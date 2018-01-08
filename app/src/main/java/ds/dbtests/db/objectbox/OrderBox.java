@@ -10,8 +10,6 @@ import io.objectbox.annotation.Relation;
 import io.objectbox.annotation.apihint.Internal;
 import io.objectbox.exception.DbDetachedException;
 import io.objectbox.relation.ToOne;
-import io.objectbox.Box;
-import io.objectbox.exception.DbException;
 
 
 @Entity
@@ -27,9 +25,26 @@ public class OrderBox /*implements Order*/ {
     private String description;
     @Relation
     private UserBox user;
-
+    long userId;
     /** Used to resolve relations */
     @Internal
+    @Generated(hash = 1307364262)
+    transient BoxStore __boxStore;
+    @Generated(hash = 861401677)
+    public OrderBox(long id, String title, double price, int count, Date created,
+            Date expiration, String description, long userId) {
+        this.id = id;
+        this.title = title;
+        this.price = price;
+        this.count = count;
+        this.created = created;
+        this.expiration = expiration;
+        this.description = description;
+        this.userId = userId;
+    }
+    @Generated(hash = 851799299)
+    public OrderBox() {
+    }
     public long getId() {
         return id;
     }
@@ -72,30 +87,15 @@ public class OrderBox /*implements Order*/ {
     public void setDescription(String description) {
         this.description = description;
     }
+    public long getUserId() {
+        return userId;
+    }
+    public void setUserId(long userId) {
+        this.userId = userId;
+    }
     @Internal
     @Generated(hash = 1214004309)
     private transient ToOne<OrderBox, UserBox> user__toOne;
-    long userId;
-    /** Used to resolve relations */
-    @Internal
-    @Generated(hash = 1307364262)
-    transient BoxStore __boxStore;
-
-    @Generated(hash = 861401677)
-    public OrderBox(long id, String title, double price, int count, Date created,
-            Date expiration, String description, long userId) {
-        this.id = id;
-        this.title = title;
-        this.price = price;
-        this.count = count;
-        this.created = created;
-        this.expiration = expiration;
-        this.description = description;
-        this.userId = userId;
-    }
-    @Generated(hash = 851799299)
-    public OrderBox() {
-    }
     /** See {@link io.objectbox.relation.ToOne} for details. */
     @Generated(hash = 1060655990)
     public synchronized ToOne<OrderBox, UserBox> getUser__toOne() {
@@ -137,24 +137,7 @@ public class OrderBox /*implements Order*/ {
         }
         __boxStore.boxFor(OrderBox.class).put(this);
     }
-    public long getUserId() {
-        return userId;
-    }
-    public void setUserId(long userId) {
-        this.userId = userId;
-    }
 
-    @Override
-    public String toString() {
-        return "OrderBox{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", price=" + price +
-                ", count=" + count +
-                ", created=" + created +
-                ", expiration=" + expiration +
-                ", description='" + description + '\'' +
-                ", userId=" + userId +
-                '}';
-    }
+
+
 }
